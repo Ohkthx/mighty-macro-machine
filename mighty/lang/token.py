@@ -70,6 +70,7 @@ class Tokens(Enum):
 
 _TOKEN_SPECS = [
     ('COMMENT', r'//.*'),                         # Comments
+    ('FUNC', r'func'),                            # Function defintions.
     ('IDENTIFIER', r'[A-Za-z_][A-Za-z0-9_]*'),    # Identifiers
     ('NEXT', r'->'),                              # -> operator
     ('NUMBER', r'\d+(\.\d*)?'),                   # Number literals

@@ -54,9 +54,19 @@ class Parser:
         statements: list[ASTNode] = [first_statement]
 
         # Handle multiple statements on the same frame connected by `->`.
-        while self.current_token() and self.current_token()[0] == Tokens.NEXT:
-            self.advance()  # Skip the NEXT token.
-            statements.append(self.parse_declaration_or_function_call())
+        while self.current_token() is not None:
+            if self.current_token()[0] == Tokens.NEXT:
+                self.advance()  # Skip the NEXT token.
+                statements.append(self.parse_declaration_or_function_call())
+            elif self.current_token()[0] == Tokens.EOL:
+                self.advance()  # Skip EOL token.
+                if self.current_token() and self.current_token()[0] == Tokens.NEXT:
+                    self.advance()  # Skip the NEXT token.
+                    statements.append(self.parse_declaration_or_function_call())
+                else:
+                    break
+            else:
+                break
 
         if len(statements) > 1:
             return SameFrameNode(statements)
@@ -177,7 +187,10 @@ class Parser:
         """Parses a block of statements such as for functions or if/whiles."""
         statements: list[ASTNode] = []
         while self.current_token() and self.current_token()[0] != Tokens.RBRACE:
-            statements.append(self.parse_identifier())
-            if self.current_token() and self.current_token()[0] == Tokens.EOL:
-                self.advance()  # Consume the EOL token inside blocks as well.
+            if self.current_token()[0] == Tokens.EOL:
+                self.advance()  # Skip EOL within blocks
+            elif self.current_token()[0] == Tokens.IDENTIFIER:
+                statements.append(self.parse_identifier())
+            else:
+                raise SyntaxError(f"Unexpected token in block: {self.current_token()}")
         return statements

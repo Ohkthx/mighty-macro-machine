@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, Union
 from .node import Param, ASTNode
 
 
@@ -36,13 +36,9 @@ class Environment:
         """Sets a new function into the environment. Usually this is user defined."""
         self.functions[name] = (params, body)
 
-    def get_function(self, name: str) -> Callable[..., Any]:
+    def get_function(self, name: str) -> Union[BuiltinFunction, tuple[list[Param], list[ASTNode]]]:
         """Obtains a declared function, first checking built-in functions and returns the callable object."""
         if name in self.functions:
-            func = self.functions[name]
-            if isinstance(func, BuiltinFunction):
-                return func
-            else:
-                raise TypeError(f"Function '{name}' is not a built-in function.")
+            return self.functions[name]
         else:
-            raise NameError(f"Function '{name}' not defined.")
+            raise TypeError(f"Function '{name}' is not a built-in function.")
