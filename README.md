@@ -6,57 +6,26 @@ Ambitious mouse & keyboard macro language with a built-in recorder and playback.
 
 ### Menus
 
-#### Buttons
+- [ ] General
+  - [ ] General
+    - [ ] Delay
+  - [ ] Mouse
+    - [ ] Smooth Movement
+    - [ ] Polling Speed
+    - [ ] Randomness
+  - [ ] Keyboard
+- [ ] Script
+  - [ ] Load / Save
+  - [ ] Record
+    - [ ] Start
+    - [ ] Stop
+  - [ ] Playback
+    - [ ] Start
+    - [ ] Stop
+- [ ] Editor
+  - [ ] Cancel
+  - [ ] Save
 
-- [ ] Record action
-- [ ] Playback action
-- [ ] Stop action
-  - [ ] Stop hotkey
-- [ ] Load Script
-- [ ] Save Script
-
-#### Fields
-
-- [ ] Randomness (0 is none, decimal form)
-- [ ] Script record / playback delay (milliseconds)
-
-#### Toggles
-
-### Lexer
-
-#### Tokens
-
-- [ ] Identifier - Variable names, A-Z 0-9
-- [ ] Operator
-- [ ] Literal
-- [ ] Keyword
-- [ ] Indent
-- [ ] Dedent
-- [ ] EOL (End of Line) - '\n', Completion of the frame
-- [ ] Comment - '//' not considered during processing.
-- [ ] Delimiter
-- [ ] Colon
-- [ ] Comma
-
-#### Operators
-
-- [ ] +, -, /, *, **, % - Arithmetic
-- [ ] +=, -=, /=, */ - Arithmetic + Assignment
-- [ ] -> - Next, this indicates the following statement should be on same frame.
-- [ ] = - Assignment
-- [ ] ==, !=, >, <, >=, <= - Comparison
-
-#### Keywords
-
-- [ ] if, else
-- [ ] for, while
-- [ ] func
-
-#### Delimiters
-
-- [ ] () - Function calls, holds parameters.
-- [ ] [] - Subscripts for 
-- [ ] {}
 
 ### Built-in Functions
 

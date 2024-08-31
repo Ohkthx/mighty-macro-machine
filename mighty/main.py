@@ -1,14 +1,14 @@
-from script import Script
-from lang import Engine
+import sys
+from PyQt5.QtWidgets import QApplication
+from ui.window import MainWindow
 
 
 def main():
     """Main entry point of the application."""
-    # script = Script.create_default("hello_world.mx3")
-    script = Script.load_script("hello_world.mx3")
-
-    engine = Engine(script.code)
-    engine.run()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

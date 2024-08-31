@@ -2,26 +2,87 @@ from typing import Any
 
 
 class Config:
-    """Settings / Configuration for the script."""
+    def __init__(self) -> None:
+        self.general: GeneralConfig = GeneralConfig()
+        self.mouse: MouseConfig = MouseConfig()
+        self.keyboard: KeyboardConfig = KeyboardConfig()
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        if "general" in data:
+            self.general.from_dict(data["general"])
+        if "mouse" in data:
+            self.mouse.from_dict(data["mouse"])
+        if "keyboard" in data:
+            self.keyboard.from_dict(data["keyboard"])
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {
+            "general": self.general.to_dict(),
+            "mouse": self.mouse.to_dict(),
+            "keyboard": self.keyboard.to_dict()
+        }
+
+
+class GeneralConfig:
+    """General configuration."""
 
     def __init__(self) -> None:
         self.version: str = "1.0"
-        self.randomness: float = 0.0
+        self.start_hotkey = "Ctrl+>"
+        self.stop_hotkey = "Ctrl+."
         self.delay: int = 100  # in milliseconds.
 
     def from_dict(self, data: dict[str, Any]) -> None:
         """Loads configuration data from a dictionary."""
         self.version = data.get("version", self.version)
-        self.randomness = data.get("randomness", self.randomness)
         self.delay = data.get("delay", self.delay)
 
     def to_dict(self) -> dict[str, Any]:
         """Converts the configuration data to a dictionary."""
         return {
             "version": self.version,
-            "randomness": self.randomness,
             "delay": self.delay
         }
+
+
+class MouseConfig:
+    """Mouse specific configuration."""
+
+    def __init__(self) -> None:
+        self.smooth: bool = True
+        self.polling_speed = 120
+        self.randomness: float = 0.0
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        self.smooth = data.get("smooth", self.smooth)
+        self.polling_speed = data.get("polling_speed", self.polling_speed)
+        self.randomness = data.get("randomness", self.randomness)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {
+            "smooth": self.smooth,
+            "polling_speed": self.polling_speed,
+            "randomness": self.randomness,
+        }
+
+
+class KeyboardConfig:
+    """Keyboard specific configuration."""
+
+    def __init__(self) -> None:
+        pass
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        pass
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {}
 
 
 class Script:
@@ -29,7 +90,7 @@ class Script:
 
     def __init__(self, filename: str) -> None:
         self.filename: str = filename
-        self.config: Config = Config()
+        self.config = Config()
         self.code: list[str] = []
 
     @staticmethod
@@ -41,7 +102,7 @@ class Script:
 
         current_section = None
         script_lines = []
-        settings = {}
+        settings = {"general": {}, "mouse": {}, "keyboard": {}}
 
         for line in lines:
             line = line.strip()
@@ -55,16 +116,23 @@ class Script:
                 current_section = line[1:-1].lower()
                 continue
 
-            if current_section == "settings":
+            if current_section == "general-settings":
                 # Parse settings in the form of key = value.
                 key, value = map(str.strip, line.split("=", 1))
-                if value.isdigit():
-                    value = int(value)
-                elif value.replace('.', '', 1).isdigit():
-                    value = float(value)
-                else:
-                    value = value.strip('"')
-                settings[key] = value
+                value = Script._convert_value(value)
+                settings["general"][key] = value
+
+            elif current_section == "mouse-settings":
+                # Parse settings in the form of key = value.
+                key, value = map(str.strip, line.split("=", 1))
+                value = Script._convert_value(value)
+                settings["mouse"][key] = value
+
+            elif current_section == "keyboard-settings":
+                # Parse settings in the form of key = value.
+                key, value = map(str.strip, line.split("=", 1))
+                value = Script._convert_value(value)
+                settings["keyboard"][key] = value
 
             elif current_section == "script":
                 # Append script lines.
@@ -76,12 +144,34 @@ class Script:
 
         return script
 
+    @staticmethod
+    def _convert_value(value: str) -> Any:
+        """Converts a string value to its appropriate type."""
+        if value.isdigit():
+            return int(value)
+        elif value.replace('.', '', 1).isdigit():
+            return float(value)
+        elif value.lower() in {"true", "false"}:
+            return value.lower() == "true"
+        else:
+            return value.strip('"').strip("'")
+
     def save_script(self) -> None:
         """Saves the script to a custom format file."""
         with open(self.filename, 'w') as file:
-            # Write the settings section.
-            file.write("[settings]\n")
-            for key, value in self.config.to_dict().items():
+            # Write the general settings section.
+            file.write("[general-settings]\n")
+            for key, value in self.config.general.to_dict().items():
+                file.write(f"{key} = {repr(value)}\n")
+
+            # Write the mouse settings section.
+            file.write("\n[mouse-settings]\n")
+            for key, value in self.config.mouse.to_dict().items():
+                file.write(f"{key} = {repr(value)}\n")
+
+            # Write the keyboard settings section.
+            file.write("\n[keyboard-settings]\n")
+            for key, value in self.config.keyboard.to_dict().items():
                 file.write(f"{key} = {repr(value)}\n")
 
             # Write the script section.
