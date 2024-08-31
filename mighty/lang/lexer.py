@@ -1,12 +1,17 @@
-from typing import Iterator
+from typing import Iterator, Union
 from .token import Tokens, Token, get_token
 
 
 class Lexer:
     """Converts source code into tokens for the parser."""
 
-    def __init__(self, code: str):
-        self.code = code
+    def __init__(self, code: Union[str, Iterator[str]]) -> None:
+        lines: list[str] = []
+        if isinstance(code, str):
+            self.code = code
+        else:
+            self.code = str.join('\n', code)
+
         self.position = 0
         self.line = 1
         self.indent_level = 0
@@ -21,6 +26,7 @@ class Lexer:
             value = match.group(kind)
 
             if kind == 'NEWLINE':
+                yield (Tokens.EOL, '\\n')
                 # Update the indent level.
                 self.line += 1
                 self.indent_level = 0

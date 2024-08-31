@@ -1,27 +1,14 @@
-from lang.lexer import Lexer
-from lang.parser import Parser
-from lang.interpreter import Interpreter
+from script import Script
+from lang import Engine
 
 
 def main():
     """Main entry point of the application."""
-    code = """
-        x: float = 2.2 + 3
-            -> print(x)
-        y: int = 3 -> print(y)
-    """
-    lexer = Lexer(code)
-    tokens = list(lexer.tokenize())
-    # for token in tokens:
-    #     print(token)
+    # script = Script.create_default("hello_world.mx3")
+    script = Script.load_script("hello_world.mx3")
 
-    parser = Parser(tokens)
-    ast = parser.parse()
-    # for node in ast.statements:
-    #     print(node)
-
-    interpreter = Interpreter()
-    interpreter.interpret(ast)
+    engine = Engine(script.code)
+    engine.run()
 
 
 if __name__ == "__main__":
