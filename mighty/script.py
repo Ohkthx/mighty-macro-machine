@@ -30,20 +30,24 @@ class GeneralConfig:
 
     def __init__(self) -> None:
         self.version: str = "1.0"
-        self.start_hotkey = "Ctrl+>"
-        self.stop_hotkey = "Ctrl+."
         self.delay: int = 100  # in milliseconds.
+        self.record_fps = 120  # Speed in which it was recorded.
+        self.playback_fps = 120  # Speed in which to playback.
 
     def from_dict(self, data: dict[str, Any]) -> None:
         """Loads configuration data from a dictionary."""
         self.version = data.get("version", self.version)
         self.delay = data.get("delay", self.delay)
+        self.record_fps = data.get("record_fps", self.record_fps)
+        self.playback_fps = data.get("playback_fps", self.playback_fps)
 
     def to_dict(self) -> dict[str, Any]:
         """Converts the configuration data to a dictionary."""
         return {
             "version": self.version,
-            "delay": self.delay
+            "delay": self.delay,
+            "record_fps": self.record_fps,
+            "playback_fps": self.playback_fps
         }
 
 

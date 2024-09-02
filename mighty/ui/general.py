@@ -87,6 +87,18 @@ class GeneralTab(QWidget):
         self.general_delay.setSingleStep(100)
         layout.addRow(QLabel("Delay (ms):", self), self.general_delay)
 
+        # Determines the speed in which recordings happen.
+        self.general_record_fps = QSpinBox()
+        self.general_record_fps.setRange(0, 999999)
+        self.general_record_fps.setSingleStep(100)
+        layout.addRow(QLabel("Record FPS:", self), self.general_record_fps)
+
+        # Determines the speed in which playback happen.
+        self.general_playback_fps = QSpinBox()
+        self.general_playback_fps.setRange(0, 999999)
+        self.general_playback_fps.setSingleStep(100)
+        layout.addRow(QLabel("Playback FPS:", self), self.general_playback_fps)
+
         layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         layout.setLabelAlignment(Qt.AlignLeft)
 
@@ -161,6 +173,8 @@ class GeneralTab(QWidget):
 
         # Populate the General, Mouse, and Keyboard sections..
         self.general_delay.setValue(self.script.config.general.delay)
+        self.general_record_fps.setValue(self.script.config.general.record_fps)
+        self.general_playback_fps.setValue(self.script.config.general.playback_fps)
 
         # Mouse settings.
         self.mouse_smooth.setChecked(self.script.config.mouse.smooth)
@@ -184,6 +198,8 @@ class GeneralTab(QWidget):
 
         # Update the script object with the current UI settings.
         self.script.config.general.delay = self.general_delay.value()
+        self.script.config.general.record_fps = self.general_record_fps.value()
+        self.script.config.general.playback_fps = self.general_playback_fps.value()
         self.script.config.mouse.smooth = self.mouse_smooth.isChecked()
         self.script.config.mouse.polling_speed = self.mouse_polling.value()
         self.script.config.mouse.randomness = self.mouse_randomness.value()
@@ -227,6 +243,8 @@ class GeneralTab(QWidget):
     def clear_settings_display(self):
         """Clear the settings display after deleting a script."""
         self.general_delay.setValue(0)
+        self.general_record_fps.setValue(0)
+        self.general_playback_fps.setValue(0)
         self.mouse_smooth.setChecked(False)
         self.mouse_polling.setValue(1)
         self.mouse_randomness.setValue(0.00)

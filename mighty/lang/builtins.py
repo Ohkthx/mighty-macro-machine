@@ -1,5 +1,11 @@
 from typing import Any, Callable
+import pyautogui
 from .environment import Environment, BuiltinFunction
+
+
+def builtin_mouse_position(x: int, y: int) -> None:
+    """Moves the mouse to a specific position."""
+    pyautogui.moveTo(x, y, _pause=False)
 
 
 def builtin_print(*args: Any) -> None:
@@ -43,6 +49,7 @@ def builtin_str(arg: Any) -> str:
 
 # Maps the built-in functions to the callable names.
 BUILTINS: dict[str, Callable[..., Any]] = {
+    "mpos": builtin_mouse_position,
     "print": builtin_print,
     "len": builtin_len,
     "type": builtin_type,

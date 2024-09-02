@@ -1,6 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QPlainTextEdit
-from PyQt5.QtGui import QFontMetrics
+import threading
+import time
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QPlainTextEdit, QShortcut
+from PyQt5.QtGui import QFontMetrics, QKeySequence
 from script import Script
+from lang import Engine
+from record import Recorder
 
 
 class EditorTab(QWidget):
@@ -56,6 +60,14 @@ class EditorTab(QWidget):
         # Set the main layout.
         self.setLayout(main_layout)
 
+        # Initialize threading and stopping mechanism.
+        self.thread = None
+        self.stop_event = threading.Event()
+
+        # Set up the shortcut for stopping the script (Ctrl+C).
+        self.stop_shortcut = QShortcut(QKeySequence("Ctrl+C"), self)
+        self.stop_shortcut.activated.connect(self.stop_script)
+
     def load_script(self, script: Script):
         """Load the script's code into the editor."""
         self.script = script
@@ -84,10 +96,80 @@ class EditorTab(QWidget):
 
     def record_script(self):
         """Simulate recording text into the script editor."""
-        recorded_text = "This is a recorded script."
-        self.script_text_edit.setPlainText(recorded_text)
+        self.record_button.setText("Stop")
+        self.playback_button.setDisabled(True)
+        self.record_button.clicked.disconnect()
+        self.record_button.clicked.connect(self.stop_script)
+
+        self.stop_event.clear()
+
+        if self.thread and self.thread.is_alive():
+            # Avoids duplicate threads.
+            return
+
+        self.thread = threading.Thread(target=self.run_record)
+        self.thread.start()
 
     def playback_script(self):
-        """Simulate playing back the text from the script editor."""
-        script_content = self.script_text_edit.toPlainText()
-        print(f"Playing back script: {script_content}")
+        """Run the script in a separate thread."""
+        self.playback_button.setText("Stop")
+        self.record_button.setDisabled(True)
+        self.playback_button.clicked.disconnect()
+        self.playback_button.clicked.connect(self.stop_script)
+
+        self.stop_event.clear()
+
+        if self.thread and self.thread.is_alive():
+            # Avoid duplicate threads.
+            return
+
+        self.thread = threading.Thread(target=self.run_script)
+        self.thread.start()
+
+    def run_script(self):
+        """Method to run a simple loop in a separate thread, simulating playback."""
+        try:
+            engine = Engine(self.script.code, self.script.config.general.playback_fps)
+            while not self.stop_event.is_set() and engine.next():
+                pass
+        except Exception as e:
+            print(f"Error during playback: {e}")
+        finally:
+            self.stop_event.set()
+            self.reset_buttons()
+
+    def run_record(self):
+        """Method to run a simple loop in a separate thread, simulating recording."""
+        recorder: Recorder = Recorder(self.script.config.general.record_fps)
+        try:
+            while not self.stop_event.is_set():
+                recorder.next()
+        except Exception as e:
+            print(f"Error during recording: {e}")
+        finally:
+            self.stop_event.set()
+            self.script.code = recorder.actions
+            self.script.save_script()
+            self.reset_buttons()
+            self.reset_script()
+
+    def stop_script(self):
+        """Stop the running script (either playback or recording)."""
+        if self.thread and self.thread.is_alive():
+            self.stop_event.set()
+            self.thread.join(timeout=1)
+        self.reset_buttons()
+
+    def reset_buttons(self):
+        """Reset buttons to their initial state."""
+        self.record_button.setText("Record")
+        self.playback_button.setText("Playback")
+        self.record_button.setDisabled(False)
+        self.playback_button.setDisabled(False)
+
+        # Reconnect the original signals.
+        self.record_button.clicked.disconnect()
+        self.record_button.clicked.connect(self.record_script)
+
+        self.playback_button.clicked.disconnect()
+        self.playback_button.clicked.connect(self.playback_script)

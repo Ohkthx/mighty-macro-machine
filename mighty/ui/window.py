@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
 
         # Add a General tab with subsections.
         self.general_tab = GeneralTab(self)
-        self.general_tab.script_selected.connect(self.update_selected_script)  # Connect the signal
+        self.general_tab.script_selected.connect(self.update_selected_script)  # Connect the signal.
         self.main_tabs.addTab(self.general_tab, "General")
 
         # Add an Editor tab.
