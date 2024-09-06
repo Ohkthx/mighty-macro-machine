@@ -1,5 +1,5 @@
 import threading
-import time
+import signal
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QPlainTextEdit, QShortcut
 from PyQt5.QtGui import QFontMetrics, QKeySequence
 from script import Script
@@ -68,6 +68,16 @@ class EditorTab(QWidget):
         self.stop_shortcut = QShortcut(QKeySequence("Ctrl+C"), self)
         self.stop_shortcut.activated.connect(self.stop_script)
 
+        # Set up signal handling for termination
+        signal.signal(signal.SIGTERM, self.handle_signal)
+        signal.signal(signal.SIGINT, self.handle_signal)
+
+    def handle_signal(self, signum, frame):
+        """Handle termination signals to stop threads gracefully."""
+        print(f"Received signal {signum}, stopping threads...")
+        self.stop_script()
+        self.close()
+
     def load_script(self, script: Script):
         """Load the script's code into the editor."""
         self.script = script
@@ -108,6 +118,7 @@ class EditorTab(QWidget):
             return
 
         self.thread = threading.Thread(target=self.run_record)
+        self.thread.daemon = True
         self.thread.start()
 
     def playback_script(self):
@@ -124,12 +135,14 @@ class EditorTab(QWidget):
             return
 
         self.thread = threading.Thread(target=self.run_script)
+        self.thread.daemon = True
         self.thread.start()
 
     def run_script(self):
         """Method to run a simple loop in a separate thread, simulating playback."""
         try:
-            engine = Engine(self.script.code, self.script.config.general.playback_fps)
+            engine = Engine(self.script.code, self.script.config.general.playback_fps,
+                            self.script.config.general.record_fps)
             while not self.stop_event.is_set() and engine.next():
                 pass
         except Exception as e:

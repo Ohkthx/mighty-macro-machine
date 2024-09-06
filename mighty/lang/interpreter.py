@@ -69,7 +69,7 @@ class Interpreter:
         if isinstance(func, BuiltinFunction):
             # Checks the built-in functions first.
             args = [self.interpret(arg) for arg in node.args]
-            return func(*args)
+            return func(self.environment, *args)
         else:
             # Process a function, creating a new local environment for it.
             params, body = func

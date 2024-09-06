@@ -18,6 +18,7 @@ class Environment:
     def __init__(self) -> None:
         self.variables: dict[str, Any] = {}
         self.functions: dict[str, Any] = {}
+        self.wait: int = 0
 
     def get(self, name: str) -> Any:
         """Obtains a variables then function value if it exists."""

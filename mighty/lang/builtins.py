@@ -3,17 +3,24 @@ import pyautogui
 from .environment import Environment, BuiltinFunction
 
 
-def builtin_mouse_position(x: int, y: int) -> None:
+def builtin_wait(env: Environment, interval: int) -> None:
+    """Waits for a specified amount of frames."""
+    if env.wait > 0:
+        return
+    env.wait = interval
+
+
+def builtin_mouse_position(env: Environment, x: int, y: int) -> None:
     """Moves the mouse to a specific position."""
     pyautogui.moveTo(x, y, _pause=False)
 
 
-def builtin_print(*args: Any) -> None:
+def builtin_print(_: Environment, *args: Any) -> None:
     """Prints to the console."""
     print(*args)
 
 
-def builtin_len(arg: Any) -> int:
+def builtin_len(_: Environment, arg: Any) -> int:
     """Return the length of the given string."""
     if isinstance(arg, str):
         return len(arg)
@@ -21,12 +28,12 @@ def builtin_len(arg: Any) -> int:
         raise TypeError(f"len() argument must be a string, not '{type(arg).__name__}'")
 
 
-def builtin_type(arg: Any) -> str:
+def builtin_type(_: Environment, arg: Any) -> str:
     """Return the type of the given value."""
     return type(arg).__name__
 
 
-def builtin_int(arg: Any) -> int:
+def builtin_int(_: Environment, arg: Any) -> int:
     """Convert the given value to an integer."""
     try:
         return int(arg)
@@ -34,7 +41,7 @@ def builtin_int(arg: Any) -> int:
         raise ValueError(f"Cannot convert '{arg}' to int")
 
 
-def builtin_float(arg: Any) -> float:
+def builtin_float(_: Environment, arg: Any) -> float:
     """Convert the given value to a float."""
     try:
         return float(arg)
@@ -42,13 +49,14 @@ def builtin_float(arg: Any) -> float:
         raise ValueError(f"Cannot convert '{arg}' to float")
 
 
-def builtin_str(arg: Any) -> str:
+def builtin_str(_: Environment, arg: Any) -> str:
     """Convert the given value to a string."""
     return str(arg)
 
 
 # Maps the built-in functions to the callable names.
 BUILTINS: dict[str, Callable[..., Any]] = {
+    "wait": builtin_wait,
     "mpos": builtin_mouse_position,
     "print": builtin_print,
     "len": builtin_len,

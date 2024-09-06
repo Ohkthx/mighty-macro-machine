@@ -40,7 +40,7 @@ class Recorder:
             self.inactive_frames += 1
 
         # Calculate elapsed time and the required sleep time in seconds.
-        sleep_time = (self.interval / 1000.0) - (time.time() - start)
+        sleep_time = (1.0 / self.interval) - (time.time() - start)
 
         if sleep_time > 0.0:
             time.sleep(sleep_time)
