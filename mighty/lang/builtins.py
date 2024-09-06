@@ -1,6 +1,8 @@
+import time
 from typing import Any, Callable
 import pyautogui
 from .environment import Environment, BuiltinFunction
+from .randomness import Mouse
 
 
 def builtin_wait(env: Environment, interval: int) -> None:
@@ -13,6 +15,14 @@ def builtin_wait(env: Environment, interval: int) -> None:
 def builtin_mouse_position(env: Environment, x: int, y: int) -> None:
     """Moves the mouse to a specific position."""
     pyautogui.moveTo(x, y, _pause=False)
+
+
+def builtin_mouse_click(env: Environment, button_id: str, randomize: bool) -> None:
+    """Presses a mouse button to simulate a click."""
+    pyautogui.mouseDown(button=button_id, _pause=False)
+    if randomize:
+        time.sleep(Mouse.click_time())
+    pyautogui.mouseUp(button=button_id, _pause=False)
 
 
 def builtin_print(_: Environment, *args: Any) -> None:
@@ -58,6 +68,7 @@ def builtin_str(_: Environment, arg: Any) -> str:
 BUILTINS: dict[str, Callable[..., Any]] = {
     "wait": builtin_wait,
     "mpos": builtin_mouse_position,
+    "mclick": builtin_mouse_click,
     "print": builtin_print,
     "len": builtin_len,
     "type": builtin_type,

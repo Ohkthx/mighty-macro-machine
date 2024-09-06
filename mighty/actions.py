@@ -5,6 +5,7 @@ from util import Vec2
 class ActionType(Enum):
     """Types of actions taken by the user."""
     MPOS = "mpos"
+    MCLICK = "mclick"
     MMOVE = "mmove"
     WAIT = "wait"
 
@@ -49,3 +50,15 @@ class MouseMove(Action):
 
     def __str__(self) -> str:
         return f"{self.type.value}({self.position}, {self.frames})"
+
+
+class MouseClick(Action):
+    """Records a mouse click event, either press or release."""
+
+    def __init__(self, button: str, randomize: bool = False) -> None:
+        super().__init__(ActionType.MCLICK)
+        self.button = button
+        self.randomize = randomize
+
+    def __str__(self) -> str:
+        return f"{self.type.value}(\"{self.button}\", {str(self.randomize).lower()})"

@@ -45,11 +45,13 @@ class Interpreter:
         value: Any = self.interpret(node.expression)
 
         # Cast the value to the declared type.
-        if node.var_type == 'int':
+        if node.var_type == "bool":
+            value = bool(value)
+        elif node.var_type == "int":
             value = int(value)
-        elif node.var_type == 'float':
+        elif node.var_type == "float":
             value = float(value)
-        elif node.var_type == 'str':
+        elif node.var_type == "str":
             value = str(value)
         else:
             raise TypeError(f"Unsupported variable type: {node.var_type}")
@@ -86,13 +88,16 @@ class Interpreter:
             return result
 
     def visit_expression(self, node: ExpressionNode) -> Any:
-        """Process and expression node."""
+        """Process an expression node."""
         if node.operator is None:
             # Handle literals and identifiers.
             if isinstance(node.left, str):
                 if node.left.isdigit():
                     # Handle integer literals.
                     return int(node.left)
+                elif node.left in {"true", "false"}:
+                    # Handle boolean literals.
+                    return node.left == "true"
                 try:
                     # Try to convert to float.
                     return float(node.left)
@@ -104,7 +109,7 @@ class Interpreter:
                         # It's an identifier, so get the value from the environment.
                         return self.environment.get(node.left)
             else:
-                # Numeric value, nothing needed to be done.
+                # Numeric value or pre-parsed literal.
                 return node.left
         else:
             # Handle binary operations.
@@ -121,6 +126,18 @@ class Interpreter:
                 return left_val / right_val
             elif node.operator[0] == Tokens.MODULUS:
                 return left_val % right_val
+            elif node.operator[0] == Tokens.EQUAL:
+                return left_val == right_val
+            elif node.operator[0] == Tokens.NOT_EQUAL:
+                return left_val != right_val
+            elif node.operator[0] == Tokens.GREATER_THAN:
+                return left_val > right_val
+            elif node.operator[0] == Tokens.LESS_THAN:
+                return left_val < right_val
+            elif node.operator[0] == Tokens.GREATER_EQUAL:
+                return left_val >= right_val
+            elif node.operator[0] == Tokens.LESS_EQUAL:
+                return left_val <= right_val
             else:
                 raise Exception(f"Unknown operator: {node.operator}")
 

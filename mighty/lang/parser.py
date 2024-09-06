@@ -166,15 +166,10 @@ class Parser:
     def parse_factor(self) -> ASTNode:
         """Parses a factor, which can be a number, string, identifier, or a parenthesized expression."""
         token = self.current_token()
-        if token[0] == Tokens.NUMBER:
+        literals: set[Token] = {Tokens.BOOL, Tokens.NUMBER, Tokens.STRING, Tokens.IDENTIFIER}
+        if token[0] in literals:
             self.advance()
-            return ExpressionNode(token[1])  # Return the number literal.
-        elif token[0] == Tokens.STRING:
-            self.advance()
-            return ExpressionNode(token[1])  # Return the string literal.
-        elif token[0] == Tokens.IDENTIFIER:
-            self.advance()
-            return ExpressionNode(token[1])  # Return the identifier name.
+            return ExpressionNode(token[1])
         elif token[0] == Tokens.LPAREN:
             self.advance()
             node = self.parse_expression()

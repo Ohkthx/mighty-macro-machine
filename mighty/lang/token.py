@@ -23,7 +23,7 @@ class Tokens(Enum):
     MULTIPLY_ASSIGN = auto()
     DIVIDE_ASSIGN = auto()
 
-    NEXT = auto()  # Represents '->'
+    NEXT = auto()    # Represents '->'
     ASSIGN = auto()  # Represents '='
 
     EQUAL = auto()
@@ -34,6 +34,7 @@ class Tokens(Enum):
     LESS_EQUAL = auto()
 
     # Literals
+    BOOL = auto()    # Boolean literals
     NUMBER = auto()  # Numeric literals
     STRING = auto()  # String literals
 
@@ -55,14 +56,14 @@ class Tokens(Enum):
     COMMENT = auto()
 
     # Delimiters
-    COLON = auto()  # Represents ':'
-    COMMA = auto()  # Represents ','
-    LPAREN = auto()  # Represents '('
-    RPAREN = auto()  # Represents ')'
+    COLON = auto()     # Represents ':'
+    COMMA = auto()     # Represents ','
+    LPAREN = auto()    # Represents '('
+    RPAREN = auto()    # Represents ')'
     LBRACKET = auto()  # Represents '['
     RBRACKET = auto()  # Represents ']'
-    LBRACE = auto()  # Represents '{'
-    RBRACE = auto()  # Represents '}'
+    LBRACE = auto()    # Represents '{'
+    RBRACE = auto()    # Represents '}'
 
     # Miscellaneous
     DELIMITER = auto()
@@ -73,6 +74,7 @@ _TOKEN_SPECS = [
     ('FUNC', r'func'),                            # Function defintions.
     ('IDENTIFIER', r'[A-Za-z_][A-Za-z0-9_]*'),    # Identifiers
     ('NEXT', r'->'),                              # -> operator
+    ('BOOL', r'\b(true|false)\b'),                # Bool literals
     ('NUMBER', r'\d+(\.\d*)?'),                   # Number literals
     ('STRING', r'"[^"]*"'),                       # String literals (quoted)
     ('ASSIGN', r'='),                             # Assignment operator
