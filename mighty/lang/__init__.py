@@ -1,5 +1,6 @@
 from typing import Union, Iterator, Optional
 import time
+from .params import EngineParameters
 from .node import ASTNode
 from .lexer import Lexer
 from .parser import Parser
@@ -9,7 +10,7 @@ from .interpreter import Interpreter
 class Engine:
     """Contains all of the relative information to process a script."""
 
-    def __init__(self, code: Union[str, Iterator[str]], interval_ms: int, old_interval: Optional[int] = None) -> None:
+    def __init__(self, code: Union[str, Iterator[str]], config: EngineParameters) -> None:
         if isinstance(code, str):
             # If code is a string, split it into lines.
             self.lines: list[str] = code.splitlines()
@@ -19,13 +20,10 @@ class Engine:
 
         lexer = Lexer(self.lines)
         tokens = list(lexer.tokenize())
-        if old_interval and old_interval != interval_ms:
-            # Scale the movement to a different interval.
-            tokens = Lexer.scale(tokens, old_interval, interval_ms)
 
         parser = Parser(tokens)
         self.ast = parser.parse()
-        self.interval = interval_ms
+        self.fps = config.fps
         self.interpreter = Interpreter()
         self.iteration = iter(self.ast.statements)
 
@@ -54,7 +52,7 @@ class Engine:
             self.interpreter.interpret(node)
 
         # Calculate elapsed time and the required sleep time in seconds.
-        sleep_time = (1.0 / self.interval) - (time.time() - start)
+        sleep_time = (1.0 / self.fps) - (time.time() - start)
 
         if sleep_time > 0.0:
             time.sleep(sleep_time)

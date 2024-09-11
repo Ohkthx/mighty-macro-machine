@@ -88,16 +88,10 @@ class GeneralTab(QWidget):
         layout.addRow(QLabel("Delay (ms):", self), self.general_delay)
 
         # Determines the speed in which recordings happen.
-        self.general_record_fps = QSpinBox()
-        self.general_record_fps.setRange(0, 999999)
-        self.general_record_fps.setSingleStep(100)
-        layout.addRow(QLabel("Record FPS:", self), self.general_record_fps)
-
-        # Determines the speed in which playback happen.
-        self.general_playback_fps = QSpinBox()
-        self.general_playback_fps.setRange(0, 999999)
-        self.general_playback_fps.setSingleStep(100)
-        layout.addRow(QLabel("Playback FPS:", self), self.general_playback_fps)
+        self.general_fps = QSpinBox()
+        self.general_fps.setRange(0, 999999)
+        self.general_fps.setSingleStep(100)
+        layout.addRow(QLabel("FPS:", self), self.general_fps)
 
         layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         layout.setLabelAlignment(Qt.AlignLeft)
@@ -112,22 +106,15 @@ class GeneralTab(QWidget):
 
         # Checkbox to determine if movement should be smoothed out.
         self.mouse_smooth = QCheckBox()
-        self.mouse_smooth.setDisabled(True)
+        self.mouse_smooth.setDisabled(False)
         layout.addRow(QLabel("Smooth Movement:", self), self.mouse_smooth)
-
-        # Polling speed controls the amount of frames the mouse moves at.
-        self.mouse_polling = QSpinBox()
-        self.mouse_polling.setRange(1, 2000)
-        self.mouse_polling.setSingleStep(100)
-        self.mouse_polling.setDisabled(True)
-        layout.addRow(QLabel("Polling Speed (Hz):", self), self.mouse_polling)
 
         # Randomness as a degree of inprecision when performing mouse actions.
         self.mouse_randomness = QDoubleSpinBox()
         self.mouse_randomness.setRange(0.00, 100.00)
-        self.mouse_randomness.setDecimals(2)
-        self.mouse_randomness.setSingleStep(0.01)
-        self.mouse_randomness.setDisabled(True)
+        self.mouse_randomness.setDecimals(4)
+        self.mouse_randomness.setSingleStep(0.001)
+        self.mouse_randomness.setDisabled(False)
         layout.addRow(QLabel("Randomness:", self), self.mouse_randomness)
 
         layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -173,12 +160,10 @@ class GeneralTab(QWidget):
 
         # Populate the General, Mouse, and Keyboard sections..
         self.general_delay.setValue(self.script.config.general.delay)
-        self.general_record_fps.setValue(self.script.config.general.record_fps)
-        self.general_playback_fps.setValue(self.script.config.general.playback_fps)
+        self.general_fps.setValue(self.script.config.general.fps)
 
         # Mouse settings.
         self.mouse_smooth.setChecked(self.script.config.mouse.smooth)
-        self.mouse_polling.setValue(self.script.config.mouse.polling_speed)
         self.mouse_randomness.setValue(self.script.config.mouse.randomness)
 
         # Keyboard settings.
@@ -198,10 +183,8 @@ class GeneralTab(QWidget):
 
         # Update the script object with the current UI settings.
         self.script.config.general.delay = self.general_delay.value()
-        self.script.config.general.record_fps = self.general_record_fps.value()
-        self.script.config.general.playback_fps = self.general_playback_fps.value()
+        self.script.config.general.fps = self.general_fps.value()
         self.script.config.mouse.smooth = self.mouse_smooth.isChecked()
-        self.script.config.mouse.polling_speed = self.mouse_polling.value()
         self.script.config.mouse.randomness = self.mouse_randomness.value()
 
         # Push the changes to the actual script.
@@ -243,11 +226,9 @@ class GeneralTab(QWidget):
     def clear_settings_display(self):
         """Clear the settings display after deleting a script."""
         self.general_delay.setValue(0)
-        self.general_record_fps.setValue(0)
-        self.general_playback_fps.setValue(0)
+        self.general_fps.setValue(0)
         self.mouse_smooth.setChecked(False)
-        self.mouse_polling.setValue(1)
-        self.mouse_randomness.setValue(0.00)
+        self.mouse_randomness.setValue(0.000)
         self.keyboard_placeholder.setText("No keyboard settings yet.")
 
         # Disable the save and delete buttons.

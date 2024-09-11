@@ -1,6 +1,5 @@
 from typing import Iterator, Union
 from .token import Tokens, Token, get_token
-from .util import scale_tokens
 
 
 class Lexer:
@@ -50,7 +49,3 @@ class Lexer:
 
         # Ensure to mark the end of file.
         yield (Tokens.EOL, '\\n')
-
-    def scale(tokens: list[Token], old_ms: int, new_ms: int) -> list[Token]:
-        """Scales the mpos tokens to a new interval."""
-        return scale_tokens(tokens, old_ms, new_ms)

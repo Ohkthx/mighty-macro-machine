@@ -1,6 +1,64 @@
 from typing import Any
 
 
+class GeneralConfig:
+    """General configuration."""
+
+    def __init__(self) -> None:
+        self.version: str = "1.0"
+        self.delay: int = 100  # in milliseconds.
+        self.fps: int = 100  # Speed to record and playback.
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        self.version = data.get("version", self.version)
+        self.delay = data.get("delay", self.delay)
+        self.fps = data.get("fps", self.fps)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {
+            "version": self.version,
+            "delay": self.delay,
+            "fps": self.fps,
+        }
+
+
+class MouseConfig:
+    """Mouse specific configuration."""
+
+    def __init__(self) -> None:
+        self.smooth: bool = True
+        self.randomness: float = 0.0
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        self.smooth = data.get("smooth", self.smooth)
+        self.randomness = data.get("randomness", self.randomness)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {
+            "smooth": self.smooth,
+            "randomness": self.randomness,
+        }
+
+
+class KeyboardConfig:
+    """Keyboard specific configuration."""
+
+    def __init__(self) -> None:
+        pass
+
+    def from_dict(self, data: dict[str, Any]) -> None:
+        """Loads configuration data from a dictionary."""
+        pass
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts the configuration data to a dictionary."""
+        return {}
+
+
 class Config:
     def __init__(self) -> None:
         self.general: GeneralConfig = GeneralConfig()
@@ -23,70 +81,6 @@ class Config:
             "mouse": self.mouse.to_dict(),
             "keyboard": self.keyboard.to_dict()
         }
-
-
-class GeneralConfig:
-    """General configuration."""
-
-    def __init__(self) -> None:
-        self.version: str = "1.0"
-        self.delay: int = 100  # in milliseconds.
-        self.record_fps = 120  # Speed in which it was recorded.
-        self.playback_fps = 120  # Speed in which to playback.
-
-    def from_dict(self, data: dict[str, Any]) -> None:
-        """Loads configuration data from a dictionary."""
-        self.version = data.get("version", self.version)
-        self.delay = data.get("delay", self.delay)
-        self.record_fps = data.get("record_fps", self.record_fps)
-        self.playback_fps = data.get("playback_fps", self.playback_fps)
-
-    def to_dict(self) -> dict[str, Any]:
-        """Converts the configuration data to a dictionary."""
-        return {
-            "version": self.version,
-            "delay": self.delay,
-            "record_fps": self.record_fps,
-            "playback_fps": self.playback_fps
-        }
-
-
-class MouseConfig:
-    """Mouse specific configuration."""
-
-    def __init__(self) -> None:
-        self.smooth: bool = True
-        self.polling_speed = 120
-        self.randomness: float = 0.0
-
-    def from_dict(self, data: dict[str, Any]) -> None:
-        """Loads configuration data from a dictionary."""
-        self.smooth = data.get("smooth", self.smooth)
-        self.polling_speed = data.get("polling_speed", self.polling_speed)
-        self.randomness = data.get("randomness", self.randomness)
-
-    def to_dict(self) -> dict[str, Any]:
-        """Converts the configuration data to a dictionary."""
-        return {
-            "smooth": self.smooth,
-            "polling_speed": self.polling_speed,
-            "randomness": self.randomness,
-        }
-
-
-class KeyboardConfig:
-    """Keyboard specific configuration."""
-
-    def __init__(self) -> None:
-        pass
-
-    def from_dict(self, data: dict[str, Any]) -> None:
-        """Loads configuration data from a dictionary."""
-        pass
-
-    def to_dict(self) -> dict[str, Any]:
-        """Converts the configuration data to a dictionary."""
-        return {}
 
 
 class Script:
@@ -199,9 +193,15 @@ class Script:
         # Default code for the script.
         script.code = [
             "x: int = 5",
-            "y: float = 10.5",
+            "   -> y: float = 10.5",
             "print(x + y)",
-            'print("Hello World!")'
+            'print("Hello World!")',
+            "",
+            "func test(value: int) {",
+            "   print(value)",
+            "}",
+            "",
+            "test(x + x)"
         ]
 
         # Save the script with default settings.

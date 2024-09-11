@@ -2,8 +2,10 @@ import threading
 import signal
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QPlainTextEdit, QShortcut
 from PyQt5.QtGui import QFontMetrics, QKeySequence
+import pyautogui
 from script import Script
 from lang import Engine
+from lang.params import EngineParameters
 from record import Recorder
 
 
@@ -140,9 +142,11 @@ class EditorTab(QWidget):
 
     def run_script(self):
         """Method to run a simple loop in a separate thread, simulating playback."""
+        screen_size = pyautogui.size()
+        config = self.script.config
+        params = EngineParameters(config.general.fps, screen_size, config.mouse.randomness)
+        engine = Engine(self.script.code, params)
         try:
-            engine = Engine(self.script.code, self.script.config.general.playback_fps,
-                            self.script.config.general.record_fps)
             while not self.stop_event.is_set() and engine.next():
                 pass
         except Exception as e:
@@ -153,7 +157,7 @@ class EditorTab(QWidget):
 
     def run_record(self):
         """Method to run a simple loop in a separate thread, simulating recording."""
-        recorder: Recorder = Recorder(self.script.config.general.record_fps)
+        recorder: Recorder = Recorder(self.script.config.general.fps, self.script.config.mouse.randomness > 0.0)
         try:
             while not self.stop_event.is_set():
                 recorder.next()

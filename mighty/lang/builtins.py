@@ -14,10 +14,12 @@ def builtin_wait(env: Environment, interval: int) -> None:
 
 def builtin_mouse_position(env: Environment, x: int, y: int) -> None:
     """Moves the mouse to a specific position."""
-    pyautogui.moveTo(x, y, _pause=False)
+    if env.has_moved(x, y):
+        env.set_position(x, y)
+        pyautogui.moveTo(x, y, _pause=False)
 
 
-def builtin_mouse_click(env: Environment, button_id: str, randomize: bool) -> None:
+def builtin_mouse_click(env: Environment, button_id: str, randomize: bool = False) -> None:
     """Presses a mouse button to simulate a click."""
     pyautogui.mouseDown(button=button_id, _pause=False)
     if randomize:
