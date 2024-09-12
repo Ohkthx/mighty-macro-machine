@@ -53,10 +53,10 @@ class GeneralTab(QWidget):
         self.delete_button.setDisabled(True)
         button_layout.addWidget(self.delete_button)
 
-        # Add the button layout to the left layout
+        # Add the button layout to the left layout.
         left_layout.addLayout(button_layout)
 
-        # Add the left layout to the main layout
+        # Add the left layout to the main layout.
         self.main_layout.addLayout(left_layout, 1)  # 1/3 of the width.
 
     def init_settings_section(self):
@@ -146,6 +146,10 @@ class GeneralTab(QWidget):
             if filename.endswith(".mx3"):
                 self.script_list.addItem(filename)
 
+        # Auto-select and highlight the first item if any scripts exist.
+        if self.script_list.count() > 0:
+            self.script_list.setCurrentRow(0)
+
     def load_script_settings(self, current_item):
         """Load the selected scripts settings into the UI."""
         if not current_item:
@@ -158,7 +162,7 @@ class GeneralTab(QWidget):
         script_path = os.path.join(os.getcwd(), script_name)
         self.script = Script.load_script(script_path)
 
-        # Populate the General, Mouse, and Keyboard sections..
+        # Populate the General, Mouse, and Keyboard sections.
         self.general_delay.setValue(self.script.config.general.delay)
         self.general_fps.setValue(self.script.config.general.fps)
 
@@ -190,9 +194,6 @@ class GeneralTab(QWidget):
         # Push the changes to the actual script.
         self.script.save_script()
 
-        # Confirmation message.
-        # QMessageBox.information(self, "Saved", "The script settings have been saved successfully.")
-
     def delete_script(self):
         """Delete the selected script after confirmation."""
         if not self.script:
@@ -220,8 +221,16 @@ class GeneralTab(QWidget):
             # Clear the settings display.
             self.clear_settings_display()
 
-            # Confirmation message.
-            # QMessageBox.information(self, "Deleted", "The script has been deleted successfully.")
+            # If there are remaining scripts, select the first one.
+            if self.script_list.count() > 0:
+                self.script_list.setCurrentRow(0)
+                self.delete_button.setDisabled(False)
+                self.save_button.setDisabled(False)
+            else:
+                # If no scripts are left, clear the UI state.
+                self.script = None
+                self.delete_button.setDisabled(True)
+                self.save_button.setDisabled(True)
 
     def clear_settings_display(self):
         """Clear the settings display after deleting a script."""

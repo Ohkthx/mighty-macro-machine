@@ -1,5 +1,6 @@
 from typing import Any, Callable, Union
 from .node import Param, ASTNode
+from .mouse_controller import MouseController
 
 
 class BuiltinFunction:
@@ -19,15 +20,7 @@ class Environment:
         self.variables: dict[str, Any] = {}
         self.functions: dict[str, Any] = {}
         self.wait: int = 0
-        self.last_position: tuple[int, int] = (0, 0)
-
-    def has_moved(self, x: int, y: int) -> bool:
-        """Checks to see if the position is different than last set."""
-        return self.last_position[0] != x or self.last_position[1] != y
-
-    def set_position(self, x: int, y: int) -> None:
-        """Sets the current position of the mouse to the x, y provided."""
-        self.last_position = (x, y)
+        self.mouse: MouseController = MouseController()
 
     def get(self, name: str) -> Any:
         """Obtains a variables then function value if it exists."""

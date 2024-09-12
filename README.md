@@ -31,3 +31,9 @@ test(x + x)
   - [x] Move: `mpos(x: int, y: int)`
   - [x] Click: `mclick(button_id: 'left' | 'right' | 'middle', randomize: bool)`
   - [ ] Drag
+
+### TODO
+
+- [ ] 'Smooth' script setting. Creates a smooth mouse movement transition from current location to start of script.
+- [ ] 'Loop', to allow looping during playback.
+- [ ] 'Reverse', after the script is complete, it doubles back to the start.

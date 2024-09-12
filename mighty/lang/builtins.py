@@ -1,8 +1,6 @@
-import time
 from typing import Any, Callable
-import pyautogui
 from .environment import Environment, BuiltinFunction
-from .randomness import Mouse
+from .mouse_controller import MouseButton
 
 
 def builtin_wait(env: Environment, interval: int) -> None:
@@ -14,17 +12,16 @@ def builtin_wait(env: Environment, interval: int) -> None:
 
 def builtin_mouse_position(env: Environment, x: int, y: int) -> None:
     """Moves the mouse to a specific position."""
-    if env.has_moved(x, y):
-        env.set_position(x, y)
-        pyautogui.moveTo(x, y, _pause=False)
+    env.mouse.move_cursor(x, y)
 
 
 def builtin_mouse_click(env: Environment, button_id: str, randomize: bool = False) -> None:
     """Presses a mouse button to simulate a click."""
-    pyautogui.mouseDown(button=button_id, _pause=False)
-    if randomize:
-        time.sleep(Mouse.click_time())
-    pyautogui.mouseUp(button=button_id, _pause=False)
+    try:
+        button: MouseButton = MouseButton(button_id.lower())
+        env.mouse.click_button(button, randomize)
+    except ValueError:
+        raise RuntimeError(f"Invalid mouse button: '{button_id}'. Valid options are 'left', 'right', or 'middle'.")
 
 
 def builtin_print(_: Environment, *args: Any) -> None:
