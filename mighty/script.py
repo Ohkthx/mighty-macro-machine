@@ -59,7 +59,7 @@ class KeyboardConfig:
         return {}
 
 
-class Config:
+class ScriptConfig:
     def __init__(self) -> None:
         self.general: GeneralConfig = GeneralConfig()
         self.mouse: MouseConfig = MouseConfig()
@@ -88,7 +88,7 @@ class Script:
 
     def __init__(self, filename: str) -> None:
         self.filename: str = filename
-        self.config = Config()
+        self.config = ScriptConfig()
         self.code: list[str] = []
 
     @staticmethod
@@ -103,11 +103,13 @@ class Script:
         settings = {"general": {}, "mouse": {}, "keyboard": {}}
 
         for line in lines:
-            line = line.strip()
+            line = line.rstrip()
 
             # Skip empty lines and comments.
-            if not line or line.startswith("#"):
-                continue
+            if current_section != "script":
+                line = line.lstrip()
+                if not line or line.startswith("#"):
+                    continue
 
             # Check for section headers.
             if line.startswith("[") and line.endswith("]"):

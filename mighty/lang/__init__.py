@@ -13,10 +13,10 @@ class Engine:
     def __init__(self, code: Union[str, Iterator[str]], config: EngineParameters) -> None:
         if isinstance(code, str):
             # If code is a string, split it into lines.
-            self.lines: list[str] = code.splitlines()
+            self.lines: list[str] = Engine._code_clean(code.splitlines())
         else:
             # If code is an iterator, convert it to a list of lines.
-            self.lines: list[str] = list(code)
+            self.lines: list[str] = Engine._code_clean(list(code))
 
         lexer = Lexer(self.lines)
         tokens = list(lexer.tokenize())
@@ -26,6 +26,11 @@ class Engine:
         self.fps = config.fps
         self.interpreter = Interpreter()
         self.iteration = iter(self.ast.statements)
+
+    @staticmethod
+    def _code_clean(code: list[str]) -> list[str]:
+        """Removes whitespace and blank lines for tokenization."""
+        return [line.strip() for line in code if line.strip()]
 
     def run(self) -> None:
         """Processes the entire script."""

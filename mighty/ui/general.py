@@ -1,16 +1,17 @@
 import os
 import re
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 from script import Script
+from .script_controller import ScriptController
 
 
 class GeneralTab(QWidget):
     """This tab is used to select scripts and modify their configurations."""
-    script_selected = pyqtSignal(Script)  # Signal to emit when a script is selected.
 
-    def __init__(self, parent=None):
+    def __init__(self, main_window: 'MainWindow', parent=None) -> None:
         super().__init__(parent)
+        self.main_window = main_window  # Reference to MainWindow
 
         # Create the layout and sections.
         self.main_layout = QHBoxLayout()
@@ -21,7 +22,12 @@ class GeneralTab(QWidget):
         # Populate the script list with .mx3 files.
         self.populate_script_list()
 
-    def init_selection_section(self):
+    @property
+    def script_controller(self) -> ScriptController:
+        """Get the current ScriptController from the MainWindow."""
+        return self.main_window.get_controller()
+
+    def init_selection_section(self) -> None:
         """Creates the selection section (left-hand menu items.)"""
         # Selection box and action buttons layout.
         left_layout = QVBoxLayout()
@@ -43,11 +49,11 @@ class GeneralTab(QWidget):
 
         # Saves to the selected script.
         self.save_button = QPushButton("Save")
-        self.save_button.clicked.connect(self.save_script_settings)
+        self.save_button.clicked.connect(self.save_script)
         self.save_button.setDisabled(True)
         button_layout.addWidget(self.save_button)
 
-        # Removes the script (has prompt)
+        # Removes the script (has prompt.)
         self.delete_button = QPushButton("Delete")
         self.delete_button.clicked.connect(self.delete_script)
         self.delete_button.setDisabled(True)
@@ -59,7 +65,7 @@ class GeneralTab(QWidget):
         # Add the left layout to the main layout.
         self.main_layout.addLayout(left_layout, 1)  # 1/3 of the width.
 
-    def init_settings_section(self):
+    def init_settings_section(self) -> None:
         """Creates the settings section (right-hand menu items.)"""
         self.settings_area = QWidget()
         self.settings_layout = QVBoxLayout()
@@ -76,7 +82,7 @@ class GeneralTab(QWidget):
 
         self.main_layout.addWidget(self.settings_area, 2)  # 2/3 of the width.
 
-    def create_general_section(self):
+    def create_general_section(self) -> None:
         """Contains the general settings for the script."""
         group_box = QGroupBox("General")
         layout = QFormLayout()
@@ -99,7 +105,7 @@ class GeneralTab(QWidget):
         group_box.setLayout(layout)
         return group_box
 
-    def create_mouse_section(self):
+    def create_mouse_section(self) -> None:
         """Contains the mouse settings for the script."""
         group_box = QGroupBox("Mouse")
         layout = QFormLayout()
@@ -109,7 +115,7 @@ class GeneralTab(QWidget):
         self.mouse_smooth.setDisabled(False)
         layout.addRow(QLabel("Smooth Movement:", self), self.mouse_smooth)
 
-        # Randomness as a degree of inprecision when performing mouse actions.
+        # Randomness as a degree of imprecision when performing mouse actions.
         self.mouse_randomness = QDoubleSpinBox()
         self.mouse_randomness.setRange(0.00, 100.00)
         self.mouse_randomness.setDecimals(4)
@@ -123,7 +129,7 @@ class GeneralTab(QWidget):
         group_box.setLayout(layout)
         return group_box
 
-    def create_keyboard_section(self):
+    def create_keyboard_section(self) -> None:
         """Contains the keyboard settings for the script."""
         group_box = QGroupBox("Keyboard")
         layout = QFormLayout()
@@ -137,10 +143,10 @@ class GeneralTab(QWidget):
         group_box.setLayout(layout)
         return group_box
 
-    def populate_script_list(self):
+    def populate_script_list(self) -> None:
         """Populate the script list with .mx3 files found in the current directory."""
         self.script_list.clear()
-        script_directory = os.getcwd()  # Get the current working directory.
+        script_directory = os.getcwd()
 
         for filename in os.listdir(script_directory):
             if filename.endswith(".mx3"):
@@ -150,106 +156,87 @@ class GeneralTab(QWidget):
         if self.script_list.count() > 0:
             self.script_list.setCurrentRow(0)
 
-    def load_script_settings(self, current_item):
-        """Load the selected scripts settings into the UI."""
+    def load_script_settings(self, current_item) -> None:
+        """Load the selected script's settings into the UI."""
         if not current_item:
-            # Disable the save and delete buttons until a script is selected.
             self.save_button.setDisabled(True)
             self.delete_button.setDisabled(True)
             return
 
         script_name = current_item.text()
-        script_path = os.path.join(os.getcwd(), script_name)
-        self.script = Script.load_script(script_path)
+        self.script_controller.load_script(script_name)
 
-        # Populate the General, Mouse, and Keyboard sections.
-        self.general_delay.setValue(self.script.config.general.delay)
-        self.general_fps.setValue(self.script.config.general.fps)
+        config = self.script_controller.config()
+        # Populate the General, Mouse, and Keyboard sections using script properties.
+        self.general_delay.setValue(config.general.delay)
+        self.general_fps.setValue(config.general.fps)
+        self.mouse_smooth.setChecked(config.mouse.smooth)
+        self.mouse_randomness.setValue(config.mouse.randomness)
 
-        # Mouse settings.
-        self.mouse_smooth.setChecked(self.script.config.mouse.smooth)
-        self.mouse_randomness.setValue(self.script.config.mouse.randomness)
-
-        # Keyboard settings.
-        self.keyboard_placeholder.setText("No keyboard settings yet.")  # Placeholder
-
-        # Enable the save and delete buttons when a script is selected.
         self.save_button.setDisabled(False)
         self.delete_button.setDisabled(False)
 
-        # Emit the signal to notify the MainWindow about the selected script
-        self.script_selected.emit(self.script)
-
-    def save_script_settings(self):
+    def save_script(self) -> None:
         """Save the current settings back into the selected script."""
-        if not self.script:
+        if not self.script_controller._script:
             return
 
+        script = self.script_controller.script()
         # Update the script object with the current UI settings.
-        self.script.config.general.delay = self.general_delay.value()
-        self.script.config.general.fps = self.general_fps.value()
-        self.script.config.mouse.smooth = self.mouse_smooth.isChecked()
-        self.script.config.mouse.randomness = self.mouse_randomness.value()
+        script.config.general.delay = self.general_delay.value()
+        script.config.general.fps = self.general_fps.value()
+        script.config.mouse.smooth = self.mouse_smooth.isChecked()
+        script.config.mouse.randomness = self.mouse_randomness.value()
 
-        # Push the changes to the actual script.
-        self.script.save_script()
+        # Save the script.
+        script.save_script()
 
-    def delete_script(self):
+    def delete_script(self) -> None:
         """Delete the selected script after confirmation."""
-        if not self.script:
+        if not self.script_controller._script:
             return
 
         reply = QMessageBox.question(self, "Delete Script",
-                                     f"Are you sure you want to delete the script '{self.script.filename}'?",
+                                     f"Are you sure you want to delete the script '{
+                                         self.script_controller.filename}'?",
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            script_path = self.script.filename
-
-            # Remove the script file.
             try:
-                os.remove(script_path)
+                self.script_controller.delete_script()
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to delete the script: {e}")
                 return
 
-            # Remove the script from the list.
             current_item = self.script_list.currentItem()
             if current_item:
                 self.script_list.takeItem(self.script_list.row(current_item))
 
-            # Clear the settings display.
             self.clear_settings_display()
 
-            # If there are remaining scripts, select the first one.
             if self.script_list.count() > 0:
                 self.script_list.setCurrentRow(0)
                 self.delete_button.setDisabled(False)
                 self.save_button.setDisabled(False)
             else:
-                # If no scripts are left, clear the UI state.
-                self.script = None
                 self.delete_button.setDisabled(True)
                 self.save_button.setDisabled(True)
 
-    def clear_settings_display(self):
+    def clear_settings_display(self) -> None:
         """Clear the settings display after deleting a script."""
         self.general_delay.setValue(0)
         self.general_fps.setValue(0)
         self.mouse_smooth.setChecked(False)
         self.mouse_randomness.setValue(0.000)
         self.keyboard_placeholder.setText("No keyboard settings yet.")
-
-        # Disable the save and delete buttons.
         self.save_button.setDisabled(True)
         self.delete_button.setDisabled(True)
 
-    def create_new_script(self):
+    def create_new_script(self) -> None:
         """Create a new script after prompting for a valid name."""
         script_name, ok = QInputDialog.getText(self, "New Script", "Enter script name:")
 
         if ok and script_name:
-            # Validate the script name.
             if not self.is_valid_filename(script_name):
                 QMessageBox.warning(self, "Invalid Name", "The script name is invalid. Please try again.")
                 return
@@ -257,21 +244,18 @@ class GeneralTab(QWidget):
             script_filename = script_name + ".mx3"
             script_path = os.path.join(os.getcwd(), script_filename)
 
-            # Check if file already exists.
             if os.path.exists(script_path):
                 QMessageBox.warning(self, "File Exists",
                                     "A script with this name already exists. Please choose a different name.")
                 return
 
-            # Create the new script.
             new_script = Script.create_default(script_path)
             new_script.save_script()
+            self.script_controller.load_script(new_script.filename)
 
-            # Add the new script to the list and select it.
             self.script_list.addItem(script_filename)
             self.script_list.setCurrentItem(self.script_list.findItems(script_filename, Qt.MatchExactly)[0])
 
-    def is_valid_filename(self, filename):
+    def is_valid_filename(self, filename) -> None:
         """Check if the filename is valid (no special characters, etc.)."""
-        # Allow alphanumeric characters, underscores, dashes, and spaces.
         return re.match(r'^[\w\s-]+$', filename) is not None

@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QWidget
-from typing import Optional
-from script import Script
+from .script_controller import ScriptController
 from .general import GeneralTab
 from .editor import EditorTab
 from .debug import DebugWindow
@@ -11,49 +10,55 @@ class MainWindow(QMainWindow):
     multiple tabs that allow the user to use the mighty language.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.setWindowTitle("Mighty Macro-Machine")
 
         # The currently loaded script.
-        self.script: Optional[Script] = None
+        self.script_controller = ScriptController()
 
         # Create a main tab widget.
-        self.main_tabs = QTabWidget()
-        self.main_tabs.currentChanged.connect(self.on_tab_change)
-        self.setCentralWidget(self.main_tabs)
+        self.tabs = QTabWidget()
+        self.tabs.currentChanged.connect(self.on_tab_change)
+        self.setCentralWidget(self.tabs)
 
-        # Add a General tab with subsections.
-        self.general_tab = GeneralTab(self)
-        self.general_tab.script_selected.connect(self.update_selected_script)  # Connect the signal.
-        self.main_tabs.addTab(self.general_tab, "General")
+        # Add a General tab and connect the signals.
+        self.general = GeneralTab(self)
+        self.tabs.addTab(self.general, "General")
 
-        # Add an Editor tab.
-        self.editor_tab = EditorTab(self)
-        self.main_tabs.addTab(self.editor_tab, "Editor")
+        # Add the Editor tab.
+        self.editor = EditorTab(self)
+        self.tabs.addTab(self.editor, "Editor")
 
-        # Add a Debug tab (This tab will not be shown, instead it will trigger the popup)
-        self.debug_tab = QWidget()
-        self.main_tabs.addTab(self.debug_tab, "Debug")
+        # Add a Debug tab (This tab will not be shown, instead it will trigger the popup.)
+        self.debug = QWidget()
+        self.tabs.addTab(self.debug, "Debug")
 
         # Store the last active tab index.
         self.last_tab_index = 0
 
-    def update_selected_script(self, script: Script):
-        """Update the selected script across all relevant tabs."""
-        self.script: Optional[Script] = script
-        self.editor_tab.load_script(self.script)
-
-    def on_tab_change(self, index):
+    def on_tab_change(self, index) -> None:
         """Handles the swap between different tabs."""
-        if self.main_tabs.tabText(index) == "Debug":
+        if self.tabs.tabText(index) == "Debug":
             # Open the debug window, treating this as just a button.
             self.debug_window = DebugWindow()
             self.debug_window.show()
 
             # Set the tab back to the last active tab.
-            self.main_tabs.setCurrentIndex(self.last_tab_index)
-        else:
-            # Store the last active tab index.
-            self.last_tab_index = index
+            self.tabs.setCurrentIndex(self.last_tab_index)
+            return
+
+        if self.tabs.tabText(index) == "Editor":
+            self.editor.on_tab_focus()
+
+        # Store the last active tab index.
+        self.last_tab_index = index
+
+    def get_controller(self) -> ScriptController:
+        """Obtains the script controller belonging to the program."""
+        return self.script_controller
+
+    def update_controller(self, filename: str) -> None:
+        """Has the controller update the script being controlled."""
+        self.script_controller.load_script(filename)
